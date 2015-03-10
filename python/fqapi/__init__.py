@@ -26,7 +26,7 @@ import socket
 
 import fqapi.ftp
 
-_local_socket_path = '/var/run/FQapi'
+_local_socket_path = '/FQ/CNCapi'
 _remote_port = 987
 
 import socket, ssl
