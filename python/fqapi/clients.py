@@ -1,5 +1,9 @@
 import base64
-import httplib
+try:
+        import httplib
+except ImportError:
+        import http.client
+        httplib = http.client
 import json
 import socket
 import ssl
