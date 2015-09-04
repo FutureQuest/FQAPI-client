@@ -10,8 +10,6 @@ for account in ftp.list():
 	print account.name, account.directory
 """
 
-import fqapi
-
 RO = 'ro'
 RW = 'rw'
 WO = 'wo'
