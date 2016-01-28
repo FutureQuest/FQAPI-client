@@ -33,7 +33,7 @@ def _format_request(method, path, body, headers):
 
 def _read_response(resp):
 	body = resp.read()
-	body = json.loads(body) if body else None
+	body = json.loads(body.decode('UTF-8')) if body else None
 	return resp.status, resp.reason, body
 
 class GenericClient:
@@ -101,7 +101,7 @@ class RemoteClient(GenericClient):
 		"""
 		self.domain = domain
 		self.httpconn = HTTPSConnection(domain, port or _remote_port)
-		self.authorization = 'basic ' + base64.b64encode('%s:%s' % (username, password))
+		self.authorization = 'basic ' + base64.b64encode('{}:{}'.format(username, password).encode('UTF-8')).decode('ASCII')
 	def _request(self, method, path, body=None):
 		headers = self.httpconn.request(method, path, body, {
 			'Authorization': self.authorization,
