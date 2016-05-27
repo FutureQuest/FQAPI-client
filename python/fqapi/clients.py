@@ -29,7 +29,7 @@ def _format_request(method, path, body, headers):
 	request += '\r\n'
 	if body:
 		request += body
-	return request
+	return request.encode('UTF-8')
 
 def _read_response(resp):
 	body = resp.read()
