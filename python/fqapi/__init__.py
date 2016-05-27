@@ -24,4 +24,4 @@ except fqapi.Error as error:
 '''
 
 from .errors import *
-from .clients import LocalClient, RemoteClient
+from .clients import LocalClient, RemoteClient, WrappingLocalClient, WrappingRemoteClient

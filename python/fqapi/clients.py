@@ -5,8 +5,10 @@ except ImportError:
         import http.client
         httplib = http.client
 import json
+import os
 import socket
 import ssl
+import sys
 
 _local_socket_path = '/FQ/CNCapi'
 _remote_port = 987
@@ -109,3 +111,43 @@ class RemoteClient(GenericClient):
 			})
 		resp = self.httpconn.getresponse()
 		return _read_response(resp)
+
+class WrappingClient(GenericClient):
+        """Enhanced FQ CNC API client class that traps error results.
+
+        Attributes:
+            errormsgs  A dictionary of error messages to provide in response to specific codes.
+        """
+
+        errormsgs = {
+                500: 'Internal API error',
+        }
+
+        def request(self, method, path, body=None):
+                """Wrap the generic .request method and return only the result data.
+
+                This method calls the generic .request method but traps
+                errors by printing out a message and exiting the program
+                with a non-zero code. Specific error messages for
+                individual codes can be provided by setting
+                client.errormsgs[CODE] to a string.
+
+                """
+                try:
+                        _, _, data = super().request(method, path, body)
+                except Error as e:
+                        program = os.path.basename(sys.argv[0])
+                        try:
+                                text = self.errormsgs[e.code]
+                        except KeyError:
+                                text = 'API error: {error.code} {error.msg}'
+                        text = text.format(error=e)
+                        print('{}: {}'.format(program, text))
+                        exit(1)
+                return data
+
+class WrappingLocalClient(LocalClient, WrappingClient):
+        pass
+
+class WrappingRemoteClient(RemoteClient, WrappingClient):
+        pass
