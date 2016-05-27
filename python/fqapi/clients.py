@@ -38,7 +38,7 @@ def _read_response(resp):
 	body = json.loads(body.decode('UTF-8')) if body else None
 	return resp.status, resp.reason, body
 
-class GenericClient:
+class GenericClient(object):
 	'''
 	Generic FQ CNC API client class.
 	'''
@@ -134,7 +134,7 @@ class WrappingClient(GenericClient):
 
                 """
                 try:
-                        _, _, data = super().request(method, path, body)
+                        _, _, data = GenericClient.request(self, method, path, body)
                 except Error as e:
                         program = os.path.basename(sys.argv[0])
                         try:
