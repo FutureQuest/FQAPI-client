@@ -133,19 +133,26 @@ class WrappingClient(GenericClient):
                 individual codes can be provided by setting
                 client.errormsgs[CODE] to a string.
 
+                Setting client.errormsgs[CODE] to None makes this
+                wrapper treat that code as a valid return. This can be
+                used to verify a resource doesn't already exist by
+                setting client.errormsgs[200] to an error message and
+                client.errormsgs[404] to None.
                 """
-                try:
-                        _, _, data = GenericClient.request(self, method, path, body)
-                except Error as e:
-                        program = os.path.basename(sys.argv[0])
-                        try:
-                                text = self.errormsgs[e.code]
-                        except KeyError:
-                                text = 'API error: {error.code} {error.msg}'
-                        text = text.format(error=e)
-                        print('{}: {}'.format(program, text))
-                        exit(1)
-                return data
+                body = json.dumps(body) if body is not None else None
+                code, msg, data = self._request(method, path, body)
+                if code in self.errormsgs:
+                        text = self.errormsgs[code]
+                elif code < 200 or code >= 300:
+                        text = 'API error: {code} {msg}'
+                else:
+                        text = None
+                if text is None:
+                        return data
+                text = text.format(code=code, msg=msg)
+                program = os.path.basename(sys.argv[0])
+                print('{}: {}'.format(program, text))
+                exit(1)
 
 class WrappingLocalClient(LocalClient, WrappingClient):
         def __init__(self, socket_path=None, errormsgs=None):
