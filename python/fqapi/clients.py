@@ -118,10 +118,11 @@ class WrappingClient(GenericClient):
         Attributes:
             errormsgs  A dictionary of error messages to provide in response to specific codes.
         """
-
-        errormsgs = {
-                500: 'Internal API error',
-        }
+        def __init__(self, errormsgs=None):
+                self.errormsgs = {
+                        500: 'Internal API error',
+                }
+                self.errormsgs.update(errormsgs or {})
 
         def request(self, method, path, body=None):
                 """Wrap the generic .request method and return only the result data.
@@ -147,7 +148,11 @@ class WrappingClient(GenericClient):
                 return data
 
 class WrappingLocalClient(LocalClient, WrappingClient):
-        pass
+        def __init__(self, socket_path=None, errormsgs=None):
+                LocalClient.__init__(self, socket_path)
+                WrappingClient.__init__(self, errormsgs)
 
 class WrappingRemoteClient(RemoteClient, WrappingClient):
-        pass
+	def __init__(self, domain, username, password, port=None, errormsgs=None):
+                RemoteClient.__init__(self, domain, username, password, port)
+                WrappingClient.__init__(self, errormsgs)
