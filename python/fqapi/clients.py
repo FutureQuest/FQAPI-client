@@ -22,7 +22,7 @@ class HTTPSConnection(httplib.HTTPSConnection):
         self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_TLSv1)
 
 def _format_request(method, path, body, headers):
-    request = '%s %s HTTP/1.0\r\n' % (method, path)
+    request = '%s %s HTTP/1.1\r\n' % (method, path)
     for h in headers:
         request += '%s: %s\r\n' (h, headers[h])
     if body is not None:
