@@ -35,8 +35,11 @@ def _format_request(method, path, body, headers):
 
 def _read_response(resp):
     resp.begin()
-    body = resp.read()
-    body = json.loads(body.decode('UTF-8')) if body else None
+    body = resp.read().decode('UTF-8')
+    if resp.getheader('content-type') == 'application/json':
+        body = json.loads(body)
+    elif not body:
+        body = None
     return resp.status, resp.reason, body
 
 class GenericClient(object):
