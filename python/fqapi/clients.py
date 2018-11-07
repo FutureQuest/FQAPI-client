@@ -34,6 +34,7 @@ def _format_request(method, path, body, headers):
     return request.encode('UTF-8')
 
 def _read_response(resp):
+    resp.begin()
     body = resp.read()
     body = json.loads(body.decode('UTF-8')) if body else None
     return resp.status, resp.reason, body
@@ -57,7 +58,8 @@ class GenericClient(object):
         body -- the data given to POST and PUT requests
         """
         body = json.dumps(body) if body is not None else None
-        code,msg,data = self._request(method, path, body)
+        resp = self._request(method, path, body)
+        code, msg, data = _read_response(resp)
         if code < 200 or code >= 300:
             raise Error(code, msg)
         return code,msg,data
@@ -87,9 +89,7 @@ class LocalClient(GenericClient):
         sock = socket.socket(socket.AF_UNIX)
         sock.connect(self.socket_path)
         sock.sendall(req)
-        resp = httplib.HTTPResponse(sock, method=method)
-        resp.begin()
-        return _read_response(resp)
+        return httplib.HTTPResponse(sock, method=method)
 
 class RemoteClient(GenericClient):
     """An API client connecting to a remote server.  Uses HTTPS over TCP
@@ -109,8 +109,7 @@ class RemoteClient(GenericClient):
             'Authorization': self.authorization,
             'Content-Type': 'application/json',
             })
-        resp = self.httpconn.getresponse()
-        return _read_response(resp)
+        return self.httpconn.getresponse()
 
 class WrappingClient(GenericClient):
     """Enhanced FQ CNC API client class that traps error results.
@@ -140,7 +139,8 @@ class WrappingClient(GenericClient):
         client.errormsgs[404] to None.
         """
         body = json.dumps(body) if body is not None else None
-        code, msg, data = self._request(method, path, body)
+        resp = self._request(method, path, body)
+        code, msg, data = _read_response(resp)
         if code in self.errormsgs:
             text = self.errormsgs[code]
         elif code < 200 or code >= 300:
