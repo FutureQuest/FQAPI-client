@@ -18,9 +18,9 @@ import fqapi
 client = fqapi.RemoteClient('example.com', 'username', 'password')
 client = fqapi.LocalClient()
 try:
-	data = client.get("/1/server")
+    data = client.get("/1/server")
 except fqapi.Error as error:
-	# Handle exception
+    # Handle exception
 '''
 
 from .errors import *
