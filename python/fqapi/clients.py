@@ -35,11 +35,14 @@ def _format_request(method, path, body, headers):
 
 def _read_response(resp):
     resp.begin()
-    body = resp.read().decode('UTF-8')
-    if resp.getheader('content-type') == 'application/json':
-        body = json.loads(body)
-    elif not body:
-        body = None
+    if resp.getheader('transfer-encoding') == 'chunked':
+        body = resp
+    else:
+        body = resp.read().decode('UTF-8')
+        if resp.getheader('content-type') == 'application/json':
+            body = json.loads(body)
+        elif not body:
+            body = None
     return resp.status, resp.reason, body
 
 class GenericClient(object):
